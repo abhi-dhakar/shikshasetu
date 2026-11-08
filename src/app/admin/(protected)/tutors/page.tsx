@@ -53,9 +53,9 @@ export default async function TutorApplicationsPage({
         subtitle={`${rows.length} record(s) shown`}
       />
 
-      <div className="space-y-5 p-5 sm:p-8">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex flex-wrap gap-2">
+      <div className="admin-content">
+        <div className="admin-filter-bar">
+          <nav className="admin-filter-group" aria-label="Filter tutor applications by status">
             {["all", ...TUTOR_STATUSES].map((t) => {
               const active = status === t;
               const href =
@@ -66,17 +66,14 @@ export default async function TutorApplicationsPage({
                 <Link
                   key={t}
                   href={href}
-                  className={`rounded-full border px-4 py-2 text-[0.78rem] font-bold uppercase tracking-[0.06em] transition-all duration-300 ${
-                    active
-                      ? "border-brand-900 bg-brand-900 text-white"
-                      : "border-brand-900/12 bg-white text-ink/60 hover:-translate-y-0.5 hover:text-brand-900"
-                  }`}
+                  aria-current={active ? "page" : undefined}
+                  className={`admin-filter ${active ? "admin-filter--active" : ""}`}
                 >
                   {t}
                 </Link>
               );
             })}
-          </div>
+          </nav>
           <AdminSearch
             action="/admin/tutors"
             defaultValue={q}
@@ -86,28 +83,30 @@ export default async function TutorApplicationsPage({
         </div>
 
         {failed ? (
-          <div className="rounded-2xl border border-brand-900/10 bg-white">
-            <EmptyState text="Database not ready. Run npx drizzle-kit push." icon="alert" />
-          </div>
+          <section className="admin-panel">
+            <div className="admin-panel__body">
+              <p className="admin-alert admin-alert--danger" role="alert">
+                <Icon name="alert" className="h-4 w-4" aria-hidden="true" />
+                Database not ready. Run <code>npx drizzle-kit push</code>.
+              </p>
+            </div>
+          </section>
         ) : rows.length === 0 ? (
-          <div className="rounded-2xl border border-brand-900/10 bg-white">
+          <section className="admin-panel">
             <EmptyState text="No tutor applications match this filter." />
-          </div>
+          </section>
         ) : (
-          <div className="grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">
+          <section className="admin-card-grid" aria-label="Tutor application records">
             {rows.map((t) => (
-              <article
-                key={t.id}
-                className="card-hover flex flex-col rounded-2xl border border-brand-900/10 bg-white p-5"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-900 font-display text-lg text-white">
+              <article key={t.id} className="admin-record-card">
+                <div className="admin-record-card__header">
+                  <div className="admin-record-card__identity">
+                    <span className="admin-avatar" aria-hidden="true">
                       {t.fullName.charAt(0)}
                     </span>
-                    <div>
-                      <p className="font-bold text-brand-900">{t.fullName}</p>
-                      <p className="text-[0.74rem] text-ink/45">
+                    <div className="min-w-0">
+                      <h2 className="admin-record-card__name">{t.fullName}</h2>
+                      <p className="admin-record-card__meta">
                         SST-{2000 + t.id} · {fmtDateTime(t.createdAt)}
                       </p>
                     </div>
@@ -115,46 +114,36 @@ export default async function TutorApplicationsPage({
                   <StatusPill status={t.status} />
                 </div>
 
-                <dl className="mt-4 space-y-2 text-[0.82rem]">
+                <dl className="admin-meta-list">
                   <Row icon="qualification" label={`${t.qualification} · ${t.experience}`} />
                   <Row icon="kit" label={t.classes} />
                   <Row icon="location" label={`${t.area} · ${t.mode}`} />
                   <Row icon="school" label={`Boards: ${t.boards}`} />
                 </dl>
 
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {t.subjects.split(",").map((s) => (
-                    <span
-                      key={s}
-                      className="rounded-full bg-brand-50 px-2.5 py-1 text-[0.72rem] font-semibold text-brand-700"
-                    >
-                      {s.trim()}
+                <div className="admin-tag-list" aria-label="Subjects">
+                  {t.subjects.split(",").map((subject, index) => (
+                    <span className="admin-tag" key={`${subject.trim()}-${index}`}>
+                      {subject.trim()}
                     </span>
                   ))}
                 </div>
 
-                {t.about && (
-                  <p className="mt-3 rounded-xl bg-sand px-3 py-2.5 text-[0.78rem] italic leading-snug text-ink/55">
-                    “{t.about}”
-                  </p>
-                )}
+                {t.about && <p className="admin-quote">“{t.about}”</p>}
 
-                <div className="mt-4 flex items-center justify-between gap-3 border-t border-brand-900/8 pt-4">
-                  <div className="flex gap-2">
-                    <a
-                      href={`tel:${t.phone}`}
-                      className="inline-flex items-center gap-2 rounded-lg border border-brand-900/15 px-3 py-2 text-[0.76rem] font-bold text-brand-900 transition-colors hover:bg-brand-900 hover:text-white"
-                    >
-                      <Icon name="phone" className="h-3.5 w-3.5" />
+                <div className="admin-record-card__footer">
+                  <div className="admin-contact-actions">
+                    <a href={`tel:${t.phone}`} className="admin-button">
+                      <Icon name="phone" className="h-3.5 w-3.5" aria-hidden="true" />
                       {t.phone}
                     </a>
                     {t.email && (
                       <a
                         href={`mailto:${t.email}`}
                         aria-label={`Email ${t.fullName}`}
-                        className="grid h-9 w-9 place-items-center rounded-lg border border-brand-900/15 text-brand-900 transition-colors hover:bg-brand-900 hover:text-white"
+                        className="admin-icon-button"
                       >
-                        <Icon name="mail" className="h-3.5 w-3.5" />
+                        <Icon name="mail" className="h-3.5 w-3.5" aria-hidden="true" />
                       </a>
                     )}
                   </div>
@@ -167,7 +156,7 @@ export default async function TutorApplicationsPage({
                 </div>
               </article>
             ))}
-          </div>
+          </section>
         )}
       </div>
     </>
@@ -182,9 +171,12 @@ function Row({
   label: string;
 }) {
   return (
-    <div className="flex items-start gap-2.5 text-ink/60">
-      <Icon name={icon} className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand-600" />
-      <span>{label}</span>
+    <div className="admin-meta-list__row">
+      <dt className="admin-visually-hidden">{label}</dt>
+      <dd>
+        <Icon name={icon} aria-hidden="true" />
+        <span>{label}</span>
+      </dd>
     </div>
   );
 }

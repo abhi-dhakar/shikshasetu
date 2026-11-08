@@ -49,9 +49,9 @@ export default async function AdminProtectedLayout({
   const counts = await pendingCounts();
 
   return (
-    <div className="min-h-screen bg-[#f6f4ef] lg:flex">
+    <div className="admin-workspace">
       <AdminSidebar user={session.user} counts={counts} />
-      <div className="min-w-0 flex-1">{children}</div>
+      <main className="admin-workspace__main">{children}</main>
     </div>
   );
 }

@@ -57,9 +57,9 @@ export default async function DemoRequestsPage({
         subtitle={`${rows.length} record(s) shown`}
       />
 
-      <div className="space-y-5 p-5 sm:p-8">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex flex-wrap gap-2">
+      <div className="admin-content">
+        <div className="admin-filter-bar">
+          <nav className="admin-filter-group" aria-label="Filter demo requests by status">
             {tabs.map((t) => {
               const active = status === t;
               const href =
@@ -70,17 +70,14 @@ export default async function DemoRequestsPage({
                 <Link
                   key={t}
                   href={href}
-                  className={`rounded-full border px-4 py-2 text-[0.78rem] font-bold uppercase tracking-[0.06em] transition-all duration-300 ${
-                    active
-                      ? "border-brand-900 bg-brand-900 text-white"
-                      : "border-brand-900/12 bg-white text-ink/60 hover:-translate-y-0.5 hover:text-brand-900"
-                  }`}
+                  aria-current={active ? "page" : undefined}
+                  className={`admin-filter ${active ? "admin-filter--active" : ""}`}
                 >
                   {t}
                 </Link>
               );
             })}
-          </div>
+          </nav>
           <AdminSearch
             action="/admin/demo-requests"
             defaultValue={q}
@@ -89,16 +86,41 @@ export default async function DemoRequestsPage({
           />
         </div>
 
-        <section className="overflow-hidden rounded-2xl border border-brand-900/10 bg-white">
-          {failed ? (
-            <EmptyState text="Database not ready. Run npx drizzle-kit push." icon="alert" />
-          ) : rows.length === 0 ? (
+        {failed ? (
+          <section className="admin-panel">
+            <div className="admin-panel__body">
+              <p className="admin-alert admin-alert--danger" role="alert">
+                <Icon name="alert" className="h-4 w-4" aria-hidden="true" />
+                Database not ready. Run <code>npx drizzle-kit push</code>.
+              </p>
+            </div>
+          </section>
+        ) : rows.length === 0 ? (
+          <section className="admin-panel">
             <EmptyState text="No demo requests match this filter." />
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[68rem] text-left text-[0.84rem]">
+          </section>
+        ) : (
+          <section className="admin-panel" aria-labelledby="demo-table-title">
+            <div className="admin-panel__header">
+              <div>
+                <h2 id="demo-table-title" className="admin-panel__title">
+                  Request records
+                </h2>
+                <p className="admin-panel__subtitle">
+                  Newest first · up to 200 records
+                </p>
+              </div>
+              <span className="admin-status admin-status--neutral">
+                {rows.length} shown
+              </span>
+            </div>
+            <div className="admin-table-scroll">
+              <table className="admin-table">
+                <caption className="admin-visually-hidden">
+                  Demo lecture requests and their contact, scheduling, and status details
+                </caption>
                 <thead>
-                  <tr className="border-b border-brand-900/8 bg-sand/60">
+                  <tr>
                     {[
                       "Ref",
                       "Student",
@@ -108,84 +130,79 @@ export default async function DemoRequestsPage({
                       "Status",
                       "Received",
                     ].map((h) => (
-                      <th
-                        key={h}
-                        className="whitespace-nowrap px-5 py-3 text-[0.66rem] font-bold uppercase tracking-[0.12em] text-ink/45"
-                      >
+                      <th key={h} scope="col">
                         {h}
                       </th>
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-brand-900/8">
+                <tbody>
                   {rows.map((d) => (
-                    <tr key={d.id} className="align-top transition-colors hover:bg-sand/40">
-                      <td className="whitespace-nowrap px-5 py-4 font-bold text-brand-900">
+                    <tr key={d.id}>
+                      <th scope="row" className="admin-table__row-head">
                         SSD-{1000 + d.id}
-                      </td>
-                      <td className="px-5 py-4">
-                        <p className="font-bold text-brand-900">
+                      </th>
+                      <td>
+                        <p className="admin-table__primary">
                           {d.childFirstName} {d.childLastName}
                         </p>
-                        <p className="mt-0.5 text-[0.78rem] text-ink/55">
+                        <p className="admin-table__secondary">
                           {d.standard} · {d.board}
                         </p>
                         {d.schoolName && (
-                          <p className="mt-0.5 flex items-center gap-1.5 text-[0.74rem] text-ink/40">
-                            <Icon name="school" className="h-3 w-3" />
+                          <p className="admin-table__secondary flex items-center gap-1.5">
+                            <Icon name="school" className="h-3 w-3" aria-hidden="true" />
                             {d.schoolName}
                           </p>
                         )}
                       </td>
-                      <td className="px-5 py-4">
-                        <p className="font-semibold text-brand-900">
+                      <td>
+                        <p className="admin-table__primary">
                           {d.parentFirstName} {d.parentLastName}
                         </p>
                         <a
                           href={`tel:${d.phone}`}
-                          className="mt-0.5 flex items-center gap-1.5 text-[0.78rem] text-brand-700 hover:underline"
+                          className="admin-table__secondary flex items-center gap-1.5"
                         >
-                          <Icon name="phone" className="h-3 w-3" />
+                          <Icon name="phone" className="h-3 w-3" aria-hidden="true" />
                           {d.phone}
                         </a>
                         {d.email && (
                           <a
                             href={`mailto:${d.email}`}
-                            className="mt-0.5 flex items-center gap-1.5 text-[0.74rem] text-ink/45 hover:underline"
+                            className="admin-table__secondary flex items-center gap-1.5"
                           >
-                            <Icon name="mail" className="h-3 w-3" />
+                            <Icon name="mail" className="h-3 w-3" aria-hidden="true" />
                             {d.email}
                           </a>
                         )}
                       </td>
-                      <td className="whitespace-nowrap px-5 py-4">
-                        <p className="font-semibold text-brand-900">
+                      <td className="whitespace-nowrap">
+                        <p className="admin-table__primary">
                           {fmtDate(d.preferredDate)}
                         </p>
-                        <p className="mt-0.5 text-[0.78rem] tabular-nums text-ink/55">
+                        <p className="admin-table__secondary tabular-nums">
                           {d.preferredSlot}
                         </p>
                         {d.altDate && (
-                          <p className="mt-0.5 text-[0.72rem] text-ink/40">
+                          <p className="admin-table__secondary">
                             alt: {d.altDate} {d.altTime}
                           </p>
                         )}
                       </td>
-                      <td className="max-w-[15rem] px-5 py-4">
-                        <p className="font-semibold text-brand-900">{d.mode}</p>
-                        <p className="mt-0.5 text-[0.76rem] leading-snug text-ink/50">
+                      <td className="max-w-[15rem]">
+                        <p className="admin-table__primary">{d.mode}</p>
+                        <p className="admin-table__secondary">
                           {d.addressLine1}
                           {d.addressLine2 ? `, ${d.addressLine2}` : ""}, {d.city} –{" "}
                           {d.postalCode}
                         </p>
                         {d.comments && (
-                          <p className="mt-1.5 rounded-lg bg-sand px-2.5 py-1.5 text-[0.73rem] italic leading-snug text-ink/55">
-                            “{d.comments}”
-                          </p>
+                          <p className="admin-cell-note">“{d.comments}”</p>
                         )}
                       </td>
-                      <td className="whitespace-nowrap px-5 py-4">
-                        <div className="flex flex-col items-start gap-2">
+                      <td className="whitespace-nowrap">
+                        <div className="admin-contact-actions">
                           <StatusPill status={d.status} />
                           <StatusSelect
                             id={d.id}
@@ -195,7 +212,7 @@ export default async function DemoRequestsPage({
                           />
                         </div>
                       </td>
-                      <td className="whitespace-nowrap px-5 py-4 text-[0.76rem] text-ink/45">
+                      <td className="admin-meta-text whitespace-nowrap">
                         {fmtDateTime(d.createdAt)}
                       </td>
                     </tr>
@@ -203,8 +220,8 @@ export default async function DemoRequestsPage({
                 </tbody>
               </table>
             </div>
-          )}
-        </section>
+          </section>
+        )}
       </div>
     </>
   );
