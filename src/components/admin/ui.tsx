@@ -4,35 +4,40 @@ import { Icon, type IconName } from "@/components/icons";
 /* ---------- status pills ---------- */
 
 const TONES: Record<string, string> = {
-  new: "bg-brand-50 text-brand-700 border-brand-200",
-  received: "bg-brand-50 text-brand-700 border-brand-200",
-  contacted: "bg-amber-50 text-amber-700 border-amber-200",
-  screening: "bg-amber-50 text-amber-700 border-amber-200",
-  scheduled: "bg-violet-50 text-violet-700 border-violet-200",
-  completed: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  approved: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  cancelled: "bg-rose-50 text-rose-700 border-rose-200",
-  rejected: "bg-rose-50 text-rose-700 border-rose-200",
-  unread: "bg-blue-50 text-blue-700 border-blue-200",
-  read: "bg-slate-50 text-slate-600 border-slate-200",
-  replied: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  archived: "bg-stone-50 text-stone-600 border-stone-200",
+  new: "info",
+  received: "info",
+  contacted: "warning",
+  screening: "warning",
+  scheduled: "info",
+  completed: "success",
+  approved: "success",
+  cancelled: "danger",
+  rejected: "danger",
+  unread: "info",
+  read: "neutral",
+  replied: "success",
+  archived: "neutral",
 };
 
 export function StatusPill({ status }: { status: string }) {
+  const tone = TONES[status] ?? "neutral";
+
   return (
-    <span
-      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[0.68rem] font-bold uppercase tracking-[0.08em] ${
-        TONES[status] ?? "border-slate-200 bg-slate-50 text-slate-600"
-      }`}
-    >
-      <span className="h-1.5 w-1.5 rounded-full bg-current" />
+    <span className={`admin-status admin-status--${tone}`}>
+      <span className="admin-status__dot" aria-hidden="true" />
       {status}
     </span>
   );
 }
 
 /* ---------- KPI card ---------- */
+
+const ACCENTS = {
+  brand: "",
+  accent: "admin-stat--warning",
+  emerald: "admin-stat--success",
+  violet: "admin-stat--secondary",
+} as const;
 
 export function StatCard({
   label,
@@ -45,32 +50,19 @@ export function StatCard({
   value: string | number;
   hint?: string;
   icon: IconName;
-  accent?: "brand" | "accent" | "emerald" | "violet";
+  accent?: keyof typeof ACCENTS;
 }) {
-  const accents = {
-    brand: "bg-brand-900 text-gold",
-    accent: "bg-accent-500 text-white",
-    emerald: "bg-emerald-600 text-white",
-    violet: "bg-violet-600 text-white",
-  } as const;
-
   return (
-    <div className="card-hover rounded-2xl border border-brand-900/10 bg-white p-5">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-[0.68rem] font-bold uppercase tracking-[0.14em] text-ink/45">
-            {label}
-          </p>
-          <p className="mt-2.5 font-display text-[2rem] leading-none text-brand-900">
-            {value}
-          </p>
-          {hint && <p className="mt-2 text-[0.76rem] text-ink/50">{hint}</p>}
-        </div>
-        <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl ${accents[accent]}`}>
+    <article className={`admin-stat ${ACCENTS[accent]}`}>
+      <div className="admin-stat__top">
+        <p className="admin-eyebrow">{label}</p>
+        <span className="admin-stat__icon" aria-hidden="true">
           <Icon name={icon} className="h-5 w-5" />
         </span>
       </div>
-    </div>
+      <p className="admin-stat__value">{value}</p>
+      {hint && <p className="admin-stat__hint">{hint}</p>}
+    </article>
   );
 }
 
@@ -90,26 +82,34 @@ export function Panel({
   padded?: boolean;
 }) {
   return (
-    <section className="overflow-hidden rounded-2xl border border-brand-900/10 bg-white">
-      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-brand-900/8 px-5 py-4">
+    <section className="admin-panel">
+      <header className="admin-panel__header">
         <div>
-          <h2 className="font-display text-[1.08rem] text-brand-900">{title}</h2>
-          {subtitle && <p className="mt-0.5 text-[0.78rem] text-ink/50">{subtitle}</p>}
+          <h2 className="admin-panel__title">{title}</h2>
+          {subtitle && <p className="admin-panel__subtitle">{subtitle}</p>}
         </div>
         {action}
       </header>
-      <div className={padded ? "p-5" : ""}>{children}</div>
+      <div className={padded ? "admin-panel__body" : "admin-panel__content"}>
+        {children}
+      </div>
     </section>
   );
 }
 
-export function EmptyState({ text, icon = "inbox" }: { text: string; icon?: IconName }) {
+export function EmptyState({
+  text,
+  icon = "inbox",
+}: {
+  text: string;
+  icon?: IconName;
+}) {
   return (
-    <div className="grid place-items-center gap-3 px-6 py-14 text-center">
-      <span className="grid h-12 w-12 place-items-center rounded-2xl bg-sand text-ink/40">
+    <div className="admin-empty" role="status">
+      <span className="admin-empty__icon" aria-hidden="true">
         <Icon name={icon} className="h-5 w-5" />
       </span>
-      <p className="text-[0.88rem] text-ink/45">{text}</p>
+      <p>{text}</p>
     </div>
   );
 }

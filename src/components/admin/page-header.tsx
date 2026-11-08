@@ -14,7 +14,8 @@ export default function AdminPageHeader({
   icon: IconName;
   actions?: ReactNode;
 }) {
-  const now = new Date().toLocaleString("en-IN", {
+  const now = new Date();
+  const label = now.toLocaleString("en-IN", {
     weekday: "long",
     day: "numeric",
     month: "long",
@@ -24,31 +25,39 @@ export default function AdminPageHeader({
   });
 
   return (
-    <header className="relative overflow-hidden border-b border-brand-900/8 bg-white px-5 py-6 sm:px-8">
-      <div className="pointer-events-none absolute -right-16 -top-20 h-52 w-52 rounded-full bg-brand-50" />
-      <div className="relative flex flex-wrap items-center justify-between gap-5">
-        <div className="flex items-start gap-4">
-          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-brand-900 text-gold">
+    <header className="admin-page-header">
+      <div className="admin-page-header__inner">
+        <div className="admin-page-header__heading">
+          <span className="admin-page-icon" aria-hidden="true">
             <Icon name={icon} className="h-5 w-5" />
           </span>
           <div>
-            {eyebrow && (
-              <p className="text-[0.66rem] font-bold uppercase tracking-[0.2em] text-accent-600">
-                {eyebrow}
-              </p>
-            )}
-            <h1 className="mt-1 font-display text-[1.65rem] leading-tight text-brand-900 sm:text-[1.95rem]">
-              {title}
-            </h1>
-            {subtitle && <p className="mt-1 text-[0.86rem] text-ink/55">{subtitle}</p>}
+            <nav className="admin-breadcrumb" aria-label="Breadcrumb">
+              <span>ShikshaSetu</span>
+              <span aria-hidden="true">/</span>
+              <span>Admin</span>
+              {eyebrow && (
+                <>
+                  <span aria-hidden="true">/</span>
+                  <span className="admin-breadcrumb__current">{eyebrow}</span>
+                </>
+              )}
+            </nav>
+            <h1 className="admin-page-title">{title}</h1>
+            {subtitle && <p className="admin-page-subtitle">{subtitle}</p>}
           </div>
         </div>
-        <div className="flex items-center gap-3">
+
+        <div className="admin-page-meta">
           {actions}
-          <span className="hidden items-center gap-2 rounded-full border border-brand-900/10 bg-sand px-4 py-2 text-[0.76rem] font-semibold text-ink/55 md:inline-flex">
-            <Icon name="clock" className="h-3.5 w-3.5" />
-            {now}
+          <span className="admin-session-chip">
+            <span className="admin-session-chip__dot" aria-hidden="true" />
+            Session active
           </span>
+          <time className="admin-time-chip" dateTime={now.toISOString()}>
+            <Icon name="clock" className="h-3.5 w-3.5" aria-hidden="true" />
+            {label}
+          </time>
         </div>
       </div>
     </header>

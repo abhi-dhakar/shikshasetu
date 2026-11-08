@@ -12,21 +12,34 @@ export default function AdminSearch({
   hidden?: Record<string, string>;
 }) {
   return (
-    <form action={action} className="relative w-full max-w-xs">
+    <form action={action} method="get" className="admin-search" role="search">
       {hidden &&
-        Object.entries(hidden).map(([k, v]) => (
-          <input key={k} type="hidden" name={k} value={v} />
+        Object.entries(hidden).map(([key, value]) => (
+          <input key={key} type="hidden" name={key} value={value} />
         ))}
+      <label className="admin-visually-hidden" htmlFor={`admin-search-${action.replaceAll("/", "-")}`}>
+        {placeholder ?? "Search records"}
+      </label>
       <Icon
         name="search"
-        className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink/35"
+        className="admin-search__icon"
+        aria-hidden="true"
       />
       <input
+        id={`admin-search-${action.replaceAll("/", "-")}`}
         name="q"
+        type="search"
         defaultValue={defaultValue}
         placeholder={placeholder ?? "Search…"}
-        className="w-full rounded-full border border-brand-900/12 bg-white py-2.5 pl-10 pr-4 text-[0.85rem] text-brand-900 transition-all placeholder:text-ink/35 focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/12"
+        className="admin-input"
       />
+      <button
+        type="submit"
+        className="admin-search__submit"
+        aria-label="Submit search"
+      >
+        <Icon name="arrowRight" className="h-4 w-4" aria-hidden="true" />
+      </button>
     </form>
   );
 }

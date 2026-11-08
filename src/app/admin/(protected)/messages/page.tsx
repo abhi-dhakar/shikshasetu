@@ -62,11 +62,8 @@ export default async function MessagesPage({
         actions={
           unreadCount > 0 ? (
             <form action={markAllMessagesRead}>
-              <button
-                type="submit"
-                className="inline-flex items-center gap-2 rounded-full border border-brand-900/15 bg-white px-4 py-2 text-[0.76rem] font-bold text-brand-900 transition-colors hover:bg-brand-900 hover:text-white"
-              >
-                <Icon name="check" className="h-3.5 w-3.5" />
+              <button type="submit" className="admin-button">
+                <Icon name="check" className="h-3.5 w-3.5" aria-hidden="true" />
                 Mark all read
               </button>
             </form>
@@ -74,9 +71,9 @@ export default async function MessagesPage({
         }
       />
 
-      <div className="space-y-5 p-5 sm:p-8">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex flex-wrap gap-2">
+      <div className="admin-content">
+        <div className="admin-filter-bar">
+          <nav className="admin-filter-group" aria-label="Filter messages by status">
             {["all", ...MESSAGE_STATUSES].map((item) => {
               const active = status === item;
               const href =
@@ -87,17 +84,14 @@ export default async function MessagesPage({
                 <Link
                   key={item}
                   href={href}
-                  className={`rounded-full border px-4 py-2 text-[0.76rem] font-bold uppercase tracking-[0.06em] transition-all duration-300 ${
-                    active
-                      ? "border-brand-900 bg-brand-900 text-white"
-                      : "border-brand-900/12 bg-white text-ink/60 hover:-translate-y-0.5 hover:text-brand-900"
-                  }`}
+                  aria-current={active ? "page" : undefined}
+                  className={`admin-filter ${active ? "admin-filter--active" : ""}`}
                 >
                   {item}
                 </Link>
               );
             })}
-          </div>
+          </nav>
           <AdminSearch
             action="/admin/messages"
             defaultValue={q}
@@ -107,80 +101,83 @@ export default async function MessagesPage({
         </div>
 
         {failed ? (
-          <div className="rounded-2xl border border-brand-900/10 bg-white">
-            <EmptyState text="Database not ready. Run npx drizzle-kit push." icon="alert" />
-          </div>
+          <section className="admin-panel">
+            <div className="admin-panel__body">
+              <p className="admin-alert admin-alert--danger" role="alert">
+                <Icon name="alert" className="h-4 w-4" aria-hidden="true" />
+                Database not ready. Run <code>npx drizzle-kit push</code>.
+              </p>
+            </div>
+          </section>
         ) : rows.length === 0 ? (
-          <div className="rounded-2xl border border-brand-900/10 bg-white">
+          <section className="admin-panel">
             <EmptyState text="No messages match this filter." />
-          </div>
+          </section>
         ) : (
-          <div className="grid gap-4 lg:grid-cols-2">
+          <section className="admin-two-column-grid" aria-label="Contact message records">
             {rows.map((message) => (
               <article
                 key={message.id}
-                className={`card-hover relative rounded-2xl border bg-white p-5 ${
-                  message.status === "unread"
-                    ? "border-brand-400/45 shadow-[0_18px_50px_-32px_rgba(29,99,240,0.65)]"
-                    : "border-brand-900/10"
+                className={`admin-record-card ${
+                  message.status === "unread" ? "admin-record-card--unread" : ""
                 }`}
+                aria-labelledby={`message-${message.id}-name`}
               >
                 {message.status === "unread" && (
-                  <span className="absolute right-4 top-4 h-2 w-2 rounded-full bg-brand-500 shadow-[0_0_0_4px_rgba(51,129,251,0.12)]" />
+                  <span className="admin-record-card__unread-dot" aria-hidden="true" />
                 )}
-                <div className="flex items-start justify-between gap-3 pr-5">
-                  <div className="flex items-center gap-3">
-                    <span
-                      className={`grid h-10 w-10 place-items-center rounded-full font-display text-[0.95rem] ${
-                        message.status === "unread"
-                          ? "bg-brand-900 text-white"
-                          : "bg-accent-100 text-accent-700"
-                      }`}
-                    >
+
+                <div className="admin-record-card__header">
+                  <div className="admin-record-card__identity">
+                    <span className="admin-avatar" aria-hidden="true">
                       {message.name.charAt(0)}
                     </span>
                     <div>
-                      <p className="font-bold text-brand-900">{message.name}</p>
-                      <p className="text-[0.73rem] text-ink/45">
+                      <h2
+                        id={`message-${message.id}-name`}
+                        className="admin-record-card__name"
+                      >
+                        {message.name}
+                      </h2>
+                      <time
+                        className="admin-record-card__meta"
+                        dateTime={new Date(message.createdAt).toISOString()}
+                      >
                         {fmtDateTime(message.createdAt)}
-                      </p>
+                      </time>
                     </div>
                   </div>
                   <StatusPill status={message.status} />
                 </div>
 
-                <span className="mt-4 inline-flex rounded-full border border-brand-900/12 bg-sand px-3 py-1 text-[0.66rem] font-bold uppercase tracking-[0.08em] text-ink/55">
-                  {message.topic}
-                </span>
-                <p className="mt-3 whitespace-pre-line text-[0.87rem] leading-relaxed text-ink/70">
-                  {message.message}
-                </p>
+                <div>
+                  <span className="admin-tag">{message.topic}</span>
+                </div>
 
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-brand-900/8 pt-4">
-                  <div className="flex flex-wrap gap-2">
-                    <a
-                      href={`tel:${message.phone}`}
-                      className="inline-flex items-center gap-2 rounded-lg border border-brand-900/15 px-3 py-2 text-[0.76rem] font-bold text-brand-900 transition-colors hover:bg-brand-900 hover:text-white"
-                    >
-                      <Icon name="phone" className="h-3.5 w-3.5" />
+                <p className="admin-message-body">{message.message}</p>
+
+                <div className="admin-record-card__footer">
+                  <div className="admin-contact-actions">
+                    <a href={`tel:${message.phone}`} className="admin-button">
+                      <Icon name="phone" className="h-3.5 w-3.5" aria-hidden="true" />
                       {message.phone}
                     </a>
                     <a
                       href={`https://wa.me/91${message.phone}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 rounded-lg border border-[#25D366]/35 px-3 py-2 text-[0.76rem] font-bold text-[#128C4A] transition-colors hover:bg-[#25D366] hover:text-white"
+                      className="admin-button"
                     >
-                      <WhatsAppIcon className="h-3.5 w-3.5" />
+                      <WhatsAppIcon className="h-3.5 w-3.5" aria-hidden="true" />
                       WhatsApp
                     </a>
                     {message.email && (
                       <a
                         href={`mailto:${message.email}`}
-                        className="grid h-9 w-9 place-items-center rounded-lg border border-brand-900/15 text-brand-900 transition-colors hover:bg-brand-900 hover:text-white"
+                        className="admin-icon-button"
                         aria-label={`Email ${message.name}`}
                       >
-                        <Icon name="mail" className="h-3.5 w-3.5" />
+                        <Icon name="mail" className="h-3.5 w-3.5" aria-hidden="true" />
                       </a>
                     )}
                   </div>
@@ -191,14 +188,15 @@ export default async function MessagesPage({
                     action={updateMessageStatus}
                   />
                 </div>
+
                 {message.handledAt && (
-                  <p className="mt-2 text-right text-[0.67rem] text-ink/35">
+                  <p className="admin-audit-meta text-right">
                     Last handled {fmtDateTime(message.handledAt)}
                   </p>
                 )}
               </article>
             ))}
-          </div>
+          </section>
         )}
       </div>
     </>

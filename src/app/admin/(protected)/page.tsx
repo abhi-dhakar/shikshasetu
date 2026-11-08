@@ -127,6 +127,9 @@ export default async function AdminDashboard() {
   });
   const maxDay = Math.max(...last7.map((d) => d.n), 1);
   const maxSlot = Math.max(...data.bySlot.map((s) => s.n), 1);
+  const chartSummary = last7
+    .map((day) => `${day.iso}: ${day.n} request${day.n === 1 ? "" : "s"}`)
+    .join(", ");
 
   return (
     <>
@@ -137,15 +140,15 @@ export default async function AdminDashboard() {
         subtitle="Live snapshot of demo bookings, tutor applications and messages."
       />
 
-      <div className="space-y-6 p-5 sm:p-8">
+      <div className="admin-content">
         {!data.ok && (
-          <p className="flex items-center gap-2.5 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm font-semibold text-rose-700">
-            <Icon name="alert" className="h-4 w-4" />
+          <p className="admin-alert admin-alert--danger" role="alert">
+            <Icon name="alert" className="h-4 w-4" aria-hidden="true" />
             Database tables are not ready. Run <code>npx drizzle-kit push</code>.
           </p>
         )}
 
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <section className="admin-kpi-grid" aria-label="Enquiry key metrics">
           <StatCard
             label="Demo requests"
             value={data.totalDemos}
@@ -174,25 +177,23 @@ export default async function AdminDashboard() {
             icon="inbox"
             accent="emerald"
           />
-        </div>
+        </section>
 
-        <div className="grid gap-6 xl:grid-cols-[1.35fr_1fr]">
+        <div className="admin-split-grid">
           <Panel
             title="Demo requests · last 7 days"
             subtitle="Bookings received per day"
             padded
           >
-            <div className="flex h-52 items-end justify-between gap-3">
+            <div className="admin-chart" role="img" aria-label={chartSummary}>
               {last7.map((d) => (
-                <div key={d.iso} className="flex flex-1 flex-col items-center gap-2">
-                  <span className="text-[0.72rem] font-bold text-brand-900">{d.n}</span>
+                <div key={d.iso} className="admin-chart__column">
+                  <span className="admin-chart__value">{d.n}</span>
                   <div
-                    className="w-full rounded-t-lg bg-gradient-to-t from-brand-700 to-brand-400 transition-all duration-700"
+                    className="admin-chart__bar"
                     style={{ height: `${Math.max((d.n / maxDay) * 100, 4)}%` }}
                   />
-                  <span className="text-[0.7rem] font-semibold uppercase text-ink/40">
-                    {d.label}
-                  </span>
+                  <span className="admin-chart__label">{d.label}</span>
                 </div>
               ))}
             </div>
@@ -202,7 +203,7 @@ export default async function AdminDashboard() {
             {data.byStatus.length === 0 ? (
               <EmptyState text="No demo requests yet." icon="chart" />
             ) : (
-              <ul className="space-y-3.5">
+              <ul className="admin-progress-list">
                 {data.byStatus
                   .slice()
                   .sort((a, b) => b.n - a.n)
@@ -211,17 +212,19 @@ export default async function AdminDashboard() {
                       ? Math.round((s.n / data.totalDemos) * 100)
                       : 0;
                     return (
-                      <li key={s.status}>
-                        <div className="mb-1.5 flex items-center justify-between gap-3">
+                      <li key={s.status} className="admin-progress-row">
+                        <div className="admin-progress-row__header">
                           <StatusPill status={s.status} />
-                          <span className="text-[0.8rem] font-bold text-brand-900">
+                          <span className="admin-progress-row__value">
                             {s.n}{" "}
-                            <span className="font-medium text-ink/40">({pct}%)</span>
+                            <span className="admin-progress-row__percent">
+                              ({pct}%)
+                            </span>
                           </span>
                         </div>
-                        <div className="h-2 overflow-hidden rounded-full bg-sand">
+                        <div className="admin-progress-track">
                           <div
-                            className="h-full rounded-full bg-gradient-to-r from-accent-500 to-gold transition-all duration-700"
+                            className="admin-progress-fill"
                             style={{ width: `${Math.max(pct, 2)}%` }}
                           />
                         </div>
@@ -233,37 +236,31 @@ export default async function AdminDashboard() {
           </Panel>
         </div>
 
-        <div className="grid gap-6 xl:grid-cols-[1.35fr_1fr]">
+        <div className="admin-split-grid">
           <Panel
             title="Recent demo requests"
             subtitle="Newest first"
             action={
-              <Link
-                href="/admin/demo-requests"
-                className="inline-flex items-center gap-2 rounded-full border border-brand-900/15 px-4 py-2 text-[0.78rem] font-bold text-brand-900 transition-colors hover:bg-brand-900 hover:text-white"
-              >
+              <Link href="/admin/demo-requests" className="admin-button">
                 View all
-                <Icon name="arrowRight" className="h-3.5 w-3.5" />
+                <Icon name="arrowRight" className="h-3.5 w-3.5" aria-hidden="true" />
               </Link>
             }
           >
             {data.recentDemos.length === 0 ? (
               <EmptyState text="No demo requests yet." />
             ) : (
-              <ul className="divide-y divide-brand-900/8">
+              <ul className="admin-list">
                 {data.recentDemos.map((d) => (
-                  <li
-                    key={d.id}
-                    className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5 transition-colors hover:bg-sand/50"
-                  >
+                  <li key={d.id} className="admin-row-between">
                     <div className="min-w-0">
-                      <p className="truncate text-[0.9rem] font-bold text-brand-900">
+                      <p className="admin-list__primary">
                         {d.childFirstName} {d.childLastName}
-                        <span className="ml-2 text-[0.76rem] font-medium text-ink/45">
+                        <span className="admin-inline-meta">
                           {d.standard} · {d.board}
                         </span>
                       </p>
-                      <p className="mt-0.5 text-[0.76rem] text-ink/50">
+                      <p className="admin-list__secondary">
                         {fmtDate(d.preferredDate)} at {d.preferredSlot} · {d.mode} ·{" "}
                         {d.phone}
                       </p>
@@ -275,25 +272,21 @@ export default async function AdminDashboard() {
             )}
           </Panel>
 
-          <div className="space-y-6">
+          <div className="admin-stack">
             <Panel title="Popular demo slots" subtitle="All time" padded>
-              <ul className="space-y-3">
+              <ul className="admin-progress-list">
                 {TIME_SLOTS.map((slot) => {
                   const n = data.bySlot.find((s) => s.slot === slot)?.n ?? 0;
                   return (
-                    <li key={slot} className="flex items-center gap-3">
-                      <span className="w-12 shrink-0 text-[0.8rem] font-bold tabular-nums text-brand-900">
-                        {slot}
-                      </span>
-                      <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-sand">
+                    <li key={slot} className="admin-slot-row">
+                      <span className="admin-slot-row__label">{slot}</span>
+                      <div className="admin-progress-track">
                         <div
-                          className="h-full rounded-full bg-brand-700 transition-all duration-700"
+                          className="admin-progress-fill"
                           style={{ width: `${Math.max((n / maxSlot) * 100, 3)}%` }}
                         />
                       </div>
-                      <span className="w-6 text-right text-[0.78rem] font-bold text-ink/55">
-                        {n}
-                      </span>
+                      <span className="admin-slot-row__value">{n}</span>
                     </li>
                   );
                 })}
@@ -303,28 +296,25 @@ export default async function AdminDashboard() {
             <Panel
               title="Latest messages"
               action={
-                <Link
-                  href="/admin/messages"
-                  className="inline-flex items-center gap-2 text-[0.78rem] font-bold text-brand-900 underline-swipe"
-                >
+                <Link href="/admin/messages" className="admin-button">
                   All
-                  <Icon name="arrowRight" className="h-3.5 w-3.5" />
+                  <Icon name="arrowRight" className="h-3.5 w-3.5" aria-hidden="true" />
                 </Link>
               }
             >
               {data.recentMessages.length === 0 ? (
                 <EmptyState text="No messages yet." />
               ) : (
-                <ul className="divide-y divide-brand-900/8">
+                <ul className="admin-list">
                   {data.recentMessages.map((m) => (
-                    <li key={m.id} className="px-5 py-3.5">
-                      <div className="flex items-center justify-between gap-3">
-                        <p className="text-[0.86rem] font-bold text-brand-900">{m.name}</p>
-                        <span className="text-[0.7rem] text-ink/40">
+                    <li key={m.id}>
+                      <div className="admin-row-between">
+                        <p className="admin-list__primary">{m.name}</p>
+                        <span className="admin-meta-text">
                           {fmtDateTime(m.createdAt)}
                         </span>
                       </div>
-                      <p className="mt-1 line-clamp-2 text-[0.8rem] text-ink/55">
+                      <p className="admin-list__secondary line-clamp-2">
                         {m.topic} — {m.message}
                       </p>
                     </li>

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Icon } from "@/components/icons";
 import LoginForm from "./login-form";
 
 export const metadata: Metadata = {
@@ -9,6 +10,30 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
+type Feature = {
+  icon: "dashboard" | "chart" | "shield";
+  title: string;
+  detail: string;
+};
+
+const FEATURES: Feature[] = [
+  {
+    icon: "dashboard",
+    title: "Unified pipeline",
+    detail: "Review demo requests, applications, and messages in one place.",
+  },
+  {
+    icon: "chart",
+    title: "Clear data hierarchy",
+    detail: "Scan KPIs, status distribution, and recent activity quickly.",
+  },
+  {
+    icon: "shield",
+    title: "Protected access",
+    detail: "Signed sessions, persistent throttling, and append-only audit logs.",
+  },
+];
+
 export default async function AdminLoginPage({
   searchParams,
 }: {
@@ -17,12 +42,44 @@ export default async function AdminLoginPage({
   const params = await searchParams;
 
   return (
-    <main className="relative grid min-h-screen place-items-center overflow-hidden bg-brand-950 px-5 py-16">
-      <div className="grid-lines pointer-events-none absolute inset-0 opacity-25 invert" />
-      <div className="pointer-events-none absolute -left-32 top-0 h-[26rem] w-[26rem] animate-blob bg-brand-700/35 blur-[110px]" />
-      <div className="pointer-events-none absolute -right-28 bottom-0 h-[24rem] w-[24rem] animate-blob bg-accent-600/25 blur-[110px]" />
+    <main className="admin-auth" aria-labelledby="admin-auth-title">
+      <section className="admin-auth__intro">
+        <span className="admin-auth__eyebrow">
+          <Icon name="lock" className="h-3.5 w-3.5" aria-hidden="true" />
+          Admin console
+        </span>
+        <h1 id="admin-auth-title" className="admin-auth__title">
+          One workspace for every enquiry.
+        </h1>
+        <p className="admin-auth__lead">
+          Monitor and resolve ShikshaSetu demo bookings, tutor applications, and
+          contact messages from a focused operations dashboard.
+        </p>
 
-      <LoginForm next={params.next ?? "/admin"} passwordChanged={params.changed === "1"} />
+        <div className="admin-auth__feature-grid">
+          {FEATURES.map((feature) => (
+            <div className="admin-auth__feature" key={feature.title}>
+              <span className="admin-auth__feature-icon" aria-hidden="true">
+                <Icon name={feature.icon} className="h-4 w-4" />
+              </span>
+              <div>
+                <strong>{feature.title}</strong>
+                <span>{feature.detail}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <p className="admin-auth__status">
+          <span className="admin-auth__status-dot" aria-hidden="true" />
+          Restricted access · ShikshaSetu Surat operations
+        </p>
+      </section>
+
+      <LoginForm
+        next={params.next ?? "/admin"}
+        passwordChanged={params.changed === "1"}
+      />
     </main>
   );
 }
