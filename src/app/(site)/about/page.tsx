@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 const VALUES = [
   {
     icon: "verify" as const,
-    title: "Verify before we promise ok",
+    title: "Verify before we promise",
     text: "We would rather tell a parent we have no tutor this week than send an unverified one.",
   },
   {
